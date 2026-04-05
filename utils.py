@@ -162,9 +162,8 @@ def get_mlp_results(mlp_model, Y_train_genes, Y_test_genes, X_train_genes,
                          test_predictions_tpm, test_targets_tpm))
     
     
-def plot_expression_predictions(
-    targets_tpm, predictions_tpm, sample_size=1000, title=None
-    ):
+def plot_expression_predictions(targets_tpm, predictions_tpm, sample_size=None, 
+                                title=None):
     # 1. Flatten and Log-transform the entire dataset first
     actual_log_all = np.log1p(targets_tpm.flatten())
     pred_log_all = np.log1p(predictions_tpm.flatten())
@@ -173,7 +172,10 @@ def plot_expression_predictions(
     overall_rho, _ = spearmanr(actual_log_all, pred_log_all)
 
     # 3. Take a random sample for the visual plot
-    if len(actual_log_all) > sample_size:
+    if sample_size is None:
+        actual_plot = actual_log_all
+        pred_plot = pred_log_all
+    elif len(actual_log_all) > sample_size:
         # Set a seed for reproducibility
         np.random.seed(42) 
         indices = np.random.choice(len(actual_log_all), sample_size, 
@@ -195,11 +197,12 @@ def plot_expression_predictions(
     # Plot the sample
     plt.scatter(actual_plot, pred_plot, alpha=0.5, s=15, color='teal', 
                 edgecolor='white', linewidth=0.5, 
-                label=f'Random Sample (n={len(actual_plot)})')
+                label=f'n={len(actual_plot)}')
     
     # Identity Line (Perfect Prediction)
     max_val = max(actual_log_all.max(), pred_log_all.max())
-    plt.plot([0, max_val], [0, max_val], color='red', linestyle='--', lw=2, label='Perfect Prediction')
+    plt.plot([0, max_val], [0, max_val], color='red', linestyle='--', lw=2, 
+             label='Perfect Prediction')
 
     # Add Overall Metric to the plot
     plt.text(0.05, 0.92, f'Spearman ρ: {overall_rho:.3f}', 
@@ -211,7 +214,8 @@ def plot_expression_predictions(
 
     plt.xlabel("Actual Expression [log(TPM + 1)]")
     plt.ylabel("Predicted Expression [log(TPM + 1)]")
-    plt.title(title)
+    if title is not None:
+        plt.title(title)
     plt.legend(loc='lower right')
     plt.grid(True, alpha=0.15)
     
