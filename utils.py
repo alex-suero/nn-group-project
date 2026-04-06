@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch_geometric.nn import GCNConv, GAE 
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import spearmanr
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 
 class ShallowEncoder(torch.nn.Module):
