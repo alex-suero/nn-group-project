@@ -99,6 +99,37 @@ def train_mlp(model, inputs, targets, epochs=300, lr=0.001):
             
     return model, loss_history
 
+def train_mlp2(model, X_train, Y_train, X_val, Y_val, epochs=300, lr=0.002):
+    # Note: keeping lr=0.002 as it provided stable convergence for you previously
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=0.01)
+    criterion = nn.MSELoss()
+    
+    train_loss_history = []
+    val_loss_history = []
+    
+    for epoch in range(epochs):
+        model.train()
+        optimizer.zero_grad()
+        
+        # Predict all experiments for the TRAINING genes
+        train_preds = model(X_train)
+        train_loss = criterion(train_preds, Y_train)
+        train_loss.backward()
+        optimizer.step()
+        
+        # Evaluate on the VALIDATION genes
+        model.eval()
+        with torch.no_grad():
+            val_preds = model(X_val)
+            val_loss = criterion(val_preds, Y_val)
+            
+        train_loss_history.append(train_loss.item())
+        val_loss_history.append(val_loss.item())
+        
+        if (epoch + 1) % 20 == 0 or epoch == 0:
+            print(f'Epoch: {epoch + 1:03d} | Train MSE: {train_loss.item():.4f} | Val MSE: {val_loss.item():.4f}')
+            
+    return model, train_loss_history, val_loss_history
 
 def get_mlp_results(mlp_model, Y_train_genes, Y_test_genes, X_train_genes, 
                     X_test_genes, scaler, train_exps, all_experiments):
